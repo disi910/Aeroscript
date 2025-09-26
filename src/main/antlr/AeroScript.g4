@@ -31,7 +31,7 @@ RANDOM  : 'random';
 POINT   : 'point';
 
 // New keywords
-DESCEND_TO_GROUND: 'descend to groud';
+DESCEND_TO_GROUND: 'descend to ground';
 RETURN_TO_BASE: 'return to base';
 DESCEND_BY: 'descend by';
 ASCEND_BY: 'ascend by';

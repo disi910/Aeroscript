@@ -51,25 +51,46 @@ public class Interpreter extends AeroScriptBaseVisitor<Object> {
         // Programmet er en liste med excecutions, Jeg må håndtere hver type expression,
         // Samt håndtere pilene og sånt tror jeg
         ArrayList<Execution> execList = new ArrayList<>();
+        Execution startExecution = null;
 
         for (AeroScriptParser.ExecutionContext ex : ctx.execution()){
-            String modeName = ex.ID(0).getText();
+            String execName = ex.ID(0).getText();
             ArrayList<Statement> statements = new ArrayList<>();
             
             for (AeroScriptParser.StatementContext statement : ex.statement()){
                 Statement s = (Statement) visitStatement(statement);
                 statements.add(s);
             }
-            methodTable.put(modeName, statements);
-            
-            if (ex.ARROW(0) != null){
-                Execution exec = new Execution(modeName, statements);
-                execList.add(exec);
-            }
 
+            Execution exec = new Execution(execName, statements);
+            execList.add(exec);
+            methodTable.put(execName, statements);
         }
 
-        return new ArrayList<Execution>();
+        for (AeroScriptParser.ExecutionContext ex : ctx.execution()){
+            if (ex.ARROW() != null && ex.ARROW().size()> 0){
+                String executionName = ex.ID(0).getText();
+
+                execute(executionName);
+
+                if (ex.ID().size() > 1){
+                    String nextExecution = ex.ID(1).getText();
+                    execute(nextExecution);
+                }
+            }
+        }
+
+        return execList;
+    }
+
+    public void execute(String execName){
+        ArrayList<Statement> statements = methodTable.get(execName);
+        // Execute all statements in the list of statements in the execution
+        if (statements != null){
+            for (Statement s : statements){
+                s.execute(heap);
+            }
+        }
     }
 
 
@@ -80,26 +101,37 @@ public class Interpreter extends AeroScriptBaseVisitor<Object> {
 
     @Override
     public Object visitAction(AeroScriptParser.ActionContext ctx){
-
-        
         currentSpeed = null;
         currentTime = null;
 
         // First check if optional speed and for x seconds is present
         if (ctx.AT_SPEED() != null){
-            currentSpeed = Float.parseFloat(ctx.expression(1).getText());
+            currentSpeed = Float.parseFloat(ctx.expression().getText());
             System.out.println("Speed set: " + currentSpeed);
         } else if (ctx.FOR() != null && ctx.SECONDS() != null){
-            currentTime = Float.parseFloat(ctx.expression(0).getText());
+            currentTime = Float.parseFloat(ctx.expression().getText());
             System.out.println("Time set: " + currentTime);
         }
 
         // Check through all actions
-        if (ctx.acMove() != null){
+        if (ctx.acDock() != null){
+            return visitAcDock(ctx.acDock());
+        } else if (ctx.acMove() != null) {
             return visitAcMove(ctx.acMove());
+        } else if (ctx.acTurn() != null) {
+            return visitAcTurn(ctx.acTurn());
+        } else if (ctx.acAscend() != null) {
+            return visitAcAscend(ctx.acAscend());
+        } else if (ctx.acDescend() != null) {
+            return visitAcDescend(ctx.acDescend());
         } else {
-            return visitAcMove(ctx.acMove());
+            throw new RuntimeException("Action not detected");
         }
+    }
+
+    @Override
+    public Object visitAcDock(AeroScriptParser.AcDockContext ctx){
+        return new ReturnToDockStatement();
     }
 
     @Override
@@ -176,4 +208,19 @@ public class Interpreter extends AeroScriptBaseVisitor<Object> {
         Expression right = visitExpression(ctx.range().right);
         return new RangeExpression(left, right);
     }
+
+    // Getter methods
+    public Float getBattery(){
+        HashMap<String, Object> vars = (HashMap<String, Object>) heap.get(Memory.VARIABLES);
+        return (Float) vars.get("battery level");
+    }
+    public Point getPosition(){
+        HashMap<String, Object> vars = (HashMap<String, Object>) heap.get(Memory.VARIABLES);
+        return (Point) vars.get("current position");
+    }
+    public Float getDistanceTravelled(){
+        HashMap<String, Object> vars = (HashMap<String, Object>) heap.get(Memory.VARIABLES);
+        return (Float) vars.get("distance travelled");
+    }
+
 }

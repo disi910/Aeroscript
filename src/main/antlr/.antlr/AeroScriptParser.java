@@ -40,7 +40,7 @@ public class AeroScriptParser extends Parser {
 		return new String[] {
 			null, null, null, null, "'{'", "'}'", "'['", "']'", "'('", "')'", "'--'", 
 			"';'", "','", "'>'", "'->'", "'+'", "'-'", "'*'", "'random'", "'point'", 
-			"'descend to groud'", "'return to base'", "'descend by'", "'ascend by'", 
+			"'descend to ground'", "'return to base'", "'descend by'", "'ascend by'", 
 			"'at speed'", "'seconds'", "'right'", "'move'", "'turn'", "'left'", "'for'", 
 			"'to'", "'by'"
 		};

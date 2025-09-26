@@ -13,7 +13,7 @@ public class MoveToPointStatement extends Statement{
     public MoveToPointStatement(Point target, Float speed, Float time){
         this.target = target;
         this.speed = (speed != null) ? speed : 0.0f;
-        this.time = (time != null) ? speed : 0.0f;
+        this.time = (time != null) ? time : 0.0f;
     }
 
     @Override

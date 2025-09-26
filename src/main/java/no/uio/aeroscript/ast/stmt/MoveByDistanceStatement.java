@@ -25,10 +25,10 @@ public class MoveByDistanceStatement extends Statement{
         Point currentPos = (Point) vars.get("current position");
         
         // Move the drone by *distance* meters on the X axis
-        Float currentPosition = currentPos.getX() + distance;
+        Point newPos = new Point(currentPos.getX() + distance, currentPos.getY());
         Float newBattery = (distance * 0.5f) + (time * 0.1f) + (speed * 1);
 
-        vars.put("current position", currentPosition);
+        vars.put("current position", newPos);
         vars.put("battery level", currentBattery - newBattery);
         vars.put("distance travelled", currentDistance + distance);
 
