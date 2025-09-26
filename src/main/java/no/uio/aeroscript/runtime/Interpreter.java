@@ -25,6 +25,11 @@ public class Interpreter extends AeroScriptBaseVisitor<Object> {
         this.stack = stack;
     }
 
+    private void resetSpeedTime(){
+        currentSpeed = null;
+        currentTime = null;
+    }
+
     @Override
     public Object visitPoint(AeroScriptParser.PointContext ctx) {
         Expression xNode = (Expression) visit(ctx.expression(0));
@@ -101,8 +106,7 @@ public class Interpreter extends AeroScriptBaseVisitor<Object> {
 
     @Override
     public Object visitAction(AeroScriptParser.ActionContext ctx){
-        currentSpeed = null;
-        currentTime = null;
+        resetSpeedTime();
 
         // First check if optional speed and for x seconds is present
         if (ctx.AT_SPEED() != null){
@@ -131,7 +135,7 @@ public class Interpreter extends AeroScriptBaseVisitor<Object> {
 
     @Override
     public Object visitAcDock(AeroScriptParser.AcDockContext ctx){
-        return new ReturnToDockStatement();
+        return new ReturnToDockStatement(currentSpeed, currentTime);
     }
 
     @Override
@@ -141,11 +145,30 @@ public class Interpreter extends AeroScriptBaseVisitor<Object> {
             Point target = (Point) visitPoint(ctx.point());
             return new MoveToPointStatement(target, currentSpeed, currentTime);
 
-        } else {
+        } else if (ctx.MOVE() != null && ctx.BY() != null){
             // Then it's a "move by n distance"
             Float distance = Float.parseFloat(ctx.NUMBER().getText());
             return new MoveByDistanceStatement(distance, currentSpeed, currentTime);
 
+        } else {
+            throw new RuntimeException("Error on AcMove");
+        }
+    }
+
+    @Override
+    public Object visitAcTurn(AeroScriptParser.AcTurnContext ctx){
+        Float degrees = null;
+        if (ctx.TURN() != null && ctx.BY() != null){
+            degrees = Float.parseFloat(ctx.expression().getText());
+            if (ctx.RIGHT() != null){
+                return new TurnStatement(degrees, Direction.RIGHT, currentSpeed, currentTime);
+            } else if (ctx.LEFT() != null){
+                return new TurnStatement(degrees, Direction.LEFT, currentSpeed, currentTime);
+            } else {
+                return new TurnStatement(degrees, null, currentSpeed, currentTime);
+            }
+        } else {
+            throw new RuntimeException("Error on AcTurn");
         }
     }
 
@@ -163,9 +186,6 @@ public class Interpreter extends AeroScriptBaseVisitor<Object> {
             default -> new NumberExpression((float) 0) ;
         };
     }
-
-
-    
     @Override
     public Expression visitPlusExp(AeroScriptParser.PlusExpContext ctx){
         Expression left = visitExpression(ctx.left);

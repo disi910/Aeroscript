@@ -60,6 +60,8 @@ class InterpreterTest {
         String testProgram = "-> TestMode {\n" +
                             "    move to point (10, 20) at speed 10\n" +
                             "    move by 5\n" +
+                            "    turn right by 5\n" +
+                            "    turn by 5\n" +
                             "    return to base\n" +
                             "}";
         
@@ -69,14 +71,13 @@ class InterpreterTest {
         
         interpreter.visitProgram(parser.program());
         
-        HashMap<String, Object> vars = (HashMap<String, Object>) heap.get(Memory.VARIABLES);
-        Point pos = (Point) vars.get("current position");
-        Float battery = (Float) vars.get("battery level");
-        Float distance = (Float) vars.get("distance travelled");
+        Point pos = (Point) interpreter.getPosition();
+        Float battery = (Float) interpreter.getBattery();
+        Float distance = (Float) interpreter.getDistanceTravelled();
         
         // Check position is correct after moves
         assertEquals(15.0f, pos.getX(), 0.01f);  // moved to 10, then by 5
-        assertEquals(20.0f, pos.getY(), 0.01f);
+        assertEquals(20.0f, pos.getY(), 0.01f);  // moved to 20
         
         // Check battery was depleted
         assertTrue(battery < 100.0f);

@@ -7,18 +7,15 @@ import no.uio.aeroscript.type.Point;
 
 public class MoveByDistanceStatement extends Statement{
     private Float distance;
-    private Float speed;
-    private Float time;
 
     public MoveByDistanceStatement(Float distance, Float speed, Float time){
+        super(speed, time);
         this.distance = distance;
-        this.speed = (speed != null) ? speed : 0.0f;
-        this.time = (time != null) ? time : 0.0f;
     }
 
     @Override
     public void execute(HashMap<Memory, Object> heap){
-        HashMap<String, Object> vars = (HashMap<String, Object>) heap.get(Memory.VARIABLES);
+        HashMap<String, Object> vars = getVariables(heap);
 
         Float currentBattery = (Float) vars.get("battery level");
         Float currentDistance = (Float) vars.get("distance travelled");

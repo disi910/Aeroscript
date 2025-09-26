@@ -23,4 +23,5 @@ Usage: java -jar aeroscript.jar <path to file> [-b <battery level>] [-p <x> <y>]
 
 
 ## TODO:
-What the hell to do with the heap and stack
+What the hell to do with the heap and stack (i understand it now)
+Figure out how to "terminate" program
