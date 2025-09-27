@@ -68,14 +68,23 @@ public class Interpreter extends AeroScriptBaseVisitor<Object> {
             }
 
             Execution exec = new Execution(execName, statements);
+
+            if (ex.ARROW() != null && ex.ARROW().size() > 0 && startExecution == null) {
+                startExecution = exec;
+            }
             execList.add(exec);
             methodTable.put(execName, statements);
         }
 
-        for (AeroScriptParser.ExecutionContext ex : ctx.execution()){
-            if (ex.ARROW() != null && ex.ARROW().size()> 0){
-                String executionName = ex.ID(0).getText();
+        HashMap<String, Object> vars = (HashMap<String, Object>) heap.get(Memory.VARIABLES);
+        if (startExecution != null) {
+            vars.put("initial execution", startExecution.getExecName());
+        }
 
+        for (AeroScriptParser.ExecutionContext ex : ctx.execution()){
+            if (ex.ARROW() != null && ex.ARROW().size() > 0){
+                String executionName = ex.ID(0).getText();
+                
                 execute(executionName);
 
                 if (ex.ID().size() > 1){
@@ -97,8 +106,7 @@ public class Interpreter extends AeroScriptBaseVisitor<Object> {
             }
         }
     }
-
-
+    @Override
     public Object visitStatement(AeroScriptParser.StatementContext ctx){
         // A statement is an action
         return visitAction(ctx.action());
@@ -135,7 +143,11 @@ public class Interpreter extends AeroScriptBaseVisitor<Object> {
 
     @Override
     public Object visitAcDock(AeroScriptParser.AcDockContext ctx){
-        return new ReturnToDockStatement(currentSpeed, currentTime);
+        if (ctx.RETURN_TO_BASE() != null){
+            return new ReturnToDockStatement(currentSpeed, currentTime);
+        } else {
+            throw new RuntimeException("Error on visitAcDock()");
+        }
     }
 
     @Override
@@ -151,7 +163,7 @@ public class Interpreter extends AeroScriptBaseVisitor<Object> {
             return new MoveByDistanceStatement(distance, currentSpeed, currentTime);
 
         } else {
-            throw new RuntimeException("Error on AcMove");
+            throw new RuntimeException("Error on visitAcMove()");
         }
     }
 
@@ -168,7 +180,34 @@ public class Interpreter extends AeroScriptBaseVisitor<Object> {
                 return new TurnStatement(degrees, null, currentSpeed, currentTime);
             }
         } else {
-            throw new RuntimeException("Error on AcTurn");
+            throw new RuntimeException("Error on visitAcTurn()");
+        }
+    }
+
+    @Override
+    public Object visitAcAscend(AeroScriptParser.AcAscendContext ctx){
+        if (ctx.ASCEND_BY() != null){
+            Integer value = Integer.parseInt(ctx.expression().getText());
+            return new AscendStatement(value, currentSpeed, currentTime);
+        } else {
+            throw new RuntimeException("Error on visitAcAscend");
+        }
+    }
+
+    @Override
+    public Object visitAcDescend(AeroScriptParser.AcDescendContext ctx){
+        HashMap<String, Object> vars = (HashMap<String, Object>) heap.get(Memory.VARIABLES);
+        Integer altitude = (Integer) vars.get("altitude");
+
+        if (ctx.DESCEND_TO_GROUND() != null){
+            return new DescendStatement(altitude, currentSpeed, currentTime);
+
+        } else if(ctx.DESCEND_BY() != null && ctx.expression() != null){
+            Integer value = Integer.parseInt(ctx.expression().getText());
+            return new DescendStatement(value, currentSpeed, currentTime);
+            
+        } else {
+            throw new RuntimeException("Error on visitAcAscend");
         }
     }
 
@@ -186,6 +225,7 @@ public class Interpreter extends AeroScriptBaseVisitor<Object> {
             default -> new NumberExpression((float) 0) ;
         };
     }
+    
     @Override
     public Expression visitPlusExp(AeroScriptParser.PlusExpContext ctx){
         Expression left = visitExpression(ctx.left);

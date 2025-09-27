@@ -18,4 +18,15 @@ public abstract class Statement {
     protected HashMap<String, Object> getVariables(HashMap<Memory, Object> heap){ 
         return (HashMap<String, Object>) heap.get(Memory.VARIABLES); 
     }
+
+    protected void checkBatteryLevel(HashMap<Memory, Object> heap){
+        HashMap<String, Object> vars = getVariables(heap);
+        Float batteryLevel = (Float)vars.get("battery level");
+        
+        if ( batteryLevel <= 0){
+            throw new RuntimeException("Battery depleted");
+        } else {
+            System.out.println("Battery level: " + batteryLevel);
+        }
+    }
 }

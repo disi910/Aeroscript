@@ -15,6 +15,7 @@ public class MoveByDistanceStatement extends Statement{
 
     @Override
     public void execute(HashMap<Memory, Object> heap){
+        System.out.println("    AcMove");
         HashMap<String, Object> vars = getVariables(heap);
 
         Float currentBattery = (Float) vars.get("battery level");
@@ -23,16 +24,16 @@ public class MoveByDistanceStatement extends Statement{
         
         // Move the drone by *distance* meters on the X axis
         Point newPos = new Point(currentPos.getX() + distance, currentPos.getY());
-        Float newBattery = (distance * 0.5f) + (time * 0.1f) + (speed * 1);
+        Float newBattery = currentBattery - (distance * 0.5f) + (time * 0.1f) + (speed * 1);
 
         vars.put("current position", newPos);
-        vars.put("battery level", currentBattery - newBattery);
+        vars.put("battery level", newBattery);
         vars.put("distance travelled", currentDistance + distance);
 
-        System.out.println("Drone moving on the X axis by " + distance + " Meters. Battery: " + (Float)vars.get("battery level"));
+        System.out.println("Drone moving on the X axis by " + distance + " meters");
+        System.out.println("To point: " + newPos.getX() + ", " + newPos.getY());
+        System.out.println("Distance travelled: " + (currentDistance + distance));
 
-        if ((Float) vars.get("battery level") <= 0){
-            throw new RuntimeException("Battery depleted");
-        }
+        checkBatteryLevel(heap);
     }
 }

@@ -12,7 +12,7 @@ public class ReturnToDockStatement extends Statement{
     
     @Override
     public void execute(HashMap<Memory, Object> heap){
-
+        System.out.println("    AcDock");
         HashMap<String, Object> vars = getVariables(heap);
 
         Float distanceTravelled = (Float) vars.get("distance travelled");
@@ -24,12 +24,8 @@ public class ReturnToDockStatement extends Statement{
 
         System.out.println("Drone returning to dock!");
         System.out.println("Distance travelled: " + distanceTravelled);
-        System.out.println("Battery level: " + newBattery);
+        checkBatteryLevel(heap);
         System.out.println("Terminating... ");
-
-        if ((Float) vars.get("battery level") <= 0){
-            throw new RuntimeException("Battery depleted");
-        }
 
     }
 }

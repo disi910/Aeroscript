@@ -17,6 +17,7 @@ public class TurnStatement extends Statement{
 
     @Override
     public void execute(HashMap<Memory, Object> heap){
+        System.out.println("    AcTurn");
 
         if (direction != null) {
             System.out.println("Drone turning " + degrees + " degrees to the " + direction.getDescription());
@@ -30,10 +31,7 @@ public class TurnStatement extends Statement{
         Float newBattery = currentBattery - (degrees * 0.3f + (time * 0.3f) + (speed * 1));
 
         vars.put("battery level", newBattery);
-
-        if ((Float) vars.get("battery level") <= 0){
-            throw new RuntimeException("Battery depleted");
-        }
+        checkBatteryLevel(heap);
     }
 
 }

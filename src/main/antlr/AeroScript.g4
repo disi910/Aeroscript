@@ -69,7 +69,7 @@ acDock : RETURN_TO_BASE;
 acMove : MOVE ( TO POINT point | BY NUMBER );
 acTurn : TURN ( RIGHT | LEFT )? BY expression;
 acAscend : ASCEND_BY expression;
-acDescend : DESCEND_BY expression;
+acDescend : DESCEND_BY expression | DESCEND_TO_GROUND;
 
 // From oblig 1
 expression : NEG expression #NegExp

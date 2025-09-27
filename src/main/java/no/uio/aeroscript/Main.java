@@ -61,7 +61,7 @@ public class Main {
         vars.put("battery level", batteryLevel);
         vars.put("initial battery level", batteryLevel);
         vars.put("distance travelled", 0.0f);
-        vars.put("altitude", 0.0f);
+        vars.put("altitude", 0);
 
         heap.put(Memory.VARIABLES, vars);
         try {
