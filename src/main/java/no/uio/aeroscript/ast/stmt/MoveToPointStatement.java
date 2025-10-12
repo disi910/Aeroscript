@@ -22,12 +22,11 @@ public class MoveToPointStatement extends Statement{
         Float currentDistance = (Float) vars.get("distance travelled");
         Point currentPos = (Point) vars.get("current position");
         
-        // Cartesian distance
-        Float distanceTravelled = currentDistance + (float) Math.sqrt(
+        Float moveDistance = (float) Math.sqrt(
             Math.pow(target.getX() - currentPos.getX(), 2.0f) + 
             Math.pow(target.getY() - currentPos.getY(), 2.0f));
-
-        Float newBattery = currentBattery - (distanceTravelled * 0.7f) + (time * 0.1f) + (speed * 1);
+        Float distanceTravelled = currentDistance + moveDistance;
+        Float newBattery = currentBattery - (moveDistance * 0.7f + (time * 0.1f) + (speed * 1.0f));
 
         vars.put("current position", target);
         vars.put("battery level", newBattery);

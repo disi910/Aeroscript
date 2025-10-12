@@ -24,7 +24,7 @@ public class DescendStatement extends Statement{
 
         Integer actualDescent = Math.min(value, currentAltitide);
         Integer newAltitude = currentAltitide - actualDescent;
-        Float newBattery = currentBattery - (value * 0.2f) + (time * 0.1f) + (speed * 1.0f);
+        Float newBattery = currentBattery - (actualDescent * 0.2f + (time * 0.1f) + (speed * 1.0f));
 
         // Battery and Altitude change
         vars.put("battery level", newBattery);

@@ -3,6 +3,7 @@ package no.uio.aeroscript.ast.stmt;
 import java.util.HashMap;
 
 import no.uio.aeroscript.type.Memory;
+import no.uio.aeroscript.type.Point;
 
 public class ReturnToDockStatement extends Statement{
 
@@ -19,13 +20,23 @@ public class ReturnToDockStatement extends Statement{
         Float currentBattery = (Float) vars.get("battery level");
         Integer altitude = (Integer) vars.get("altitude");
         
-        Float newBattery = currentBattery - (altitude + (time * 0.1f) + (speed * 1));
+        Point currentPos = (Point) vars.get("current position");
+        Point initialPos = (Point) vars.get("initial position");
+
+        Float returnDistance = (float) Math.sqrt(
+            Math.pow(initialPos.getX() - currentPos.getX(), 2.0f) + 
+            Math.pow(initialPos.getY() - currentPos.getY(), 2.0f));
+
+        Float newBattery = currentBattery - (returnDistance * 0.7f + altitude + (time * 0.1f) + (speed * 1.0f));
+
+        vars.put("current position", initialPos);
+        vars.put("distance travelled", distanceTravelled + returnDistance);
         vars.put("battery level", newBattery);
 
         System.out.println("Drone returning to dock!");
         System.out.println("Distance travelled: " + distanceTravelled);
         checkBatteryLevel(heap);
         System.out.println("Terminating... ");
-
+        
     }
 }

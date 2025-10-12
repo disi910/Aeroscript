@@ -78,7 +78,16 @@ public class Main {
                 interpreter.visitProgram(programContext);
                 
                 // Print the initial position, initial battery capacity, final position, final battery level and distance travelled here
+                Point finalPos = interpreter.getPosition();
+                Float finalBattery = interpreter.getBattery();
+                Float totalDistance = interpreter.getDistanceTravelled();
 
+                System.out.println("\n=== Execution Summary ===");
+                System.out.println("Initial position: (" + initialX + ", " + initialY + ")");
+                System.out.println("Initial battery: " + batteryLevel + "%");
+                System.out.println("Final position: (" + finalPos.getX() + ", " + finalPos.getY() + ")");
+                System.out.println("Final battery: " + finalBattery + "%");
+                System.out.println("Total distance travelled: " + totalDistance + " meters");
                 System.out.println("Execution complete!");
             } catch (ParseCancellationException e) {
                 System.err.println("Parser error: " + e.getMessage());

@@ -52,49 +52,62 @@ public class Interpreter extends AeroScriptBaseVisitor<Object> {
     // the program context contains all the exections as shown in the antlr grammar. 
     @Override
     public ArrayList<Execution> visitProgram(AeroScriptParser.ProgramContext ctx) {
-        
-        // Programmet er en liste med excecutions, Jeg må håndtere hver type expression,
-        // Samt håndtere pilene og sånt tror jeg
         ArrayList<Execution> execList = new ArrayList<>();
-        Execution startExecution = null;
-
-        for (AeroScriptParser.ExecutionContext ex : ctx.execution()){
-            String execName = ex.ID(0).getText();
+        String startModeName = null;
+        HashMap<String, String> transitions = new HashMap<>(); // modeName -> nextModeName
+        
+        // Build method table
+        for (AeroScriptParser.ExecutionContext ex : ctx.execution()) {
+            String modeName = ex.ID(0).getText();
             ArrayList<Statement> statements = new ArrayList<>();
             
-            for (AeroScriptParser.StatementContext statement : ex.statement()){
-                Statement s = (Statement) visitStatement(statement);
-                statements.add(s);
+            // Parse all statements in this mode
+            for (AeroScriptParser.StatementContext stmtCtx : ex.statement()) {
+                statements.add((Statement) visitStatement(stmtCtx));
             }
-
-            Execution exec = new Execution(execName, statements);
-
-            if (ex.ARROW() != null && ex.ARROW().size() > 0 && startExecution == null) {
-                startExecution = exec;
-            }
-            execList.add(exec);
-            methodTable.put(execName, statements);
-        }
-
-        HashMap<String, Object> vars = (HashMap<String, Object>) heap.get(Memory.VARIABLES);
-        if (startExecution != null) {
-            vars.put("initial execution", startExecution.getExecName());
-        }
-
-        for (AeroScriptParser.ExecutionContext ex : ctx.execution()){
-            if (ex.ARROW() != null && ex.ARROW().size() > 0){
-                String executionName = ex.ID(0).getText();
+            
+            // Store in method table
+            methodTable.put(modeName, statements);
+            execList.add(new Execution(modeName, statements));
+            
+            // Check if this mode has a leading arrow 
+            if (ex.ARROW() != null && ex.ARROW().size() > 0) {
+                // If there's an ARROW token before any ID token, it's the start mode
+                int firstArrowIndex = ex.ARROW(0).getSymbol().getTokenIndex();
+                int firstIdIndex = ex.ID(0).getSymbol().getTokenIndex();
                 
-                execute(executionName);
-
-                if (ex.ID().size() > 1){
-                    String nextExecution = ex.ID(1).getText();
-                    execute(nextExecution);
+                if (firstArrowIndex < firstIdIndex) {
+                    startModeName = modeName;
                 }
             }
+            
+            if (ex.ID().size() > 1) {
+                String nextMode = ex.ID(1).getText();
+                transitions.put(modeName, nextMode);
+            }
         }
-
+        
+        if (startModeName != null) {
+            HashMap<String, Object> vars = (HashMap<String, Object>) heap.get(Memory.VARIABLES);
+            vars.put("initial execution", startModeName);
+            
+            // STEP 3: Execute the program starting from the start mode
+            executeChain(startModeName, transitions);
+        }
+        
         return execList;
+    }
+
+    // Helper method to execute a chain of modes following transitions
+    private void executeChain(String modeName, HashMap<String, String> transitions) {
+        // Execute current mode's statements
+        execute(modeName);
+        
+        // If this mode transitions to another, execute it next
+        if (transitions.containsKey(modeName)) {
+            String nextMode = transitions.get(modeName);
+            executeChain(nextMode, transitions);
+        }
     }
 
     public void execute(String execName){
@@ -106,6 +119,7 @@ public class Interpreter extends AeroScriptBaseVisitor<Object> {
             }
         }
     }
+    
     @Override
     public Object visitStatement(AeroScriptParser.StatementContext ctx){
         // A statement is an action

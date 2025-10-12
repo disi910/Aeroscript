@@ -69,10 +69,6 @@ class InterpreterTest {
         return parser.expression();
     }
 
-    // Helper method to evaluate an expression and return float result
-    private float evaluateExpression(String expression) {
-        return Float.parseFloat(interpreter.visitExpression(parseExpression(expression)).evaluate().toString());
-    }
 
     @Test
     void testActionsWorks() throws Exception {

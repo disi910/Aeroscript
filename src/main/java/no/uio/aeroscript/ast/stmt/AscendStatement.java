@@ -23,7 +23,7 @@ public class AscendStatement extends Statement{
         Float currentBattery = (Float) vars.get("battery level");
 
         Integer newAltitude = currentAltitide + value;
-        Float newBattery = currentBattery - (value * 0.6f) + (time * 0.1f) + (speed * 1.0f);
+        Float newBattery = currentBattery - ((value * 0.6f) + (time * 0.1f) + (speed * 1.0f));
 
         // Battery and Altitude change
         vars.put("battery level", newBattery);
